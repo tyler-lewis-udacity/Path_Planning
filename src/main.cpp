@@ -205,9 +205,9 @@ int main() {
   int lane = 1; // added 23:51
 
   // have a reference velocity to target
-  double ref_vel = 49.5; // mph added 24:05
+  double ref_vel = 0.0; // mph added 24:05 (modified at 52:20)
 
-  h.onMessage([&ref_vel,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy, &lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&ref_vel,&lane,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) { // added '&ref_vel' and '&lane' to parameters list above
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -245,40 +245,114 @@ int main() {
             auto sensor_fusion = j[1]["sensor_fusion"]; // auto == vector<vector<double>>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             /* TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds */
-
-            // json msgJson;
-            // vector<double> next_x_vals;
-            // vector<double> next_y_vals;
-
-
 
 
             int prev_size = previous_path_x.size(); // added 24:22
-            /*
 
-            if(prev_size > 0) ...
 
-            */
+            /* BEGIN COMMENTED SECTION - 41:10 */
+
+
+            // step 1: avoid rear-ending vehicles in front of us
+            if(prev_size > 0)
+            {
+              car_s = end_path_s;
+            }
+            bool too_close = false;
+
+            // find ref_v to use (for each of the other cars on the highway...)
+            for (int i=0; i < sensor_fusion.size(); i++)
+            {
+              // get the other car's d value
+              float d = sensor_fusion[i][6];
+              // check if the car is in my lane
+              if(d < (2+4*lane+2) && d > (2+4*lane-2)) // +2 and -2 checks if car is anywhere inside the 4 meter wide lane
+              {
+                double vx = sensor_fusion[i][3];
+                double vy = sensor_fusion[i][4];
+                double check_speed = sqrt(vx*vx + vy*vy); // other car's velocity
+                double check_car_s = sensor_fusion[i][5]; // other car's s value
+
+                check_car_s += ((double)prev_size*.02*check_speed); // if using previous points can project s value out
+                // check s values greater than mine and s gap
+                if((check_car_s > car_s) && ((check_car_s - car_s) < 30)) // if our car within 30 meters of the car in front of us...
+                {
+                  // lower our car's ref_vel
+                  //ref_vel = 29.5; // mph
+                  too_close = true;
+                  if(lane > 0)
+                  {
+                    lane = 0;
+                  }
+                }
+              }
+            }
+
+            // if too close to other car in front of us, de-celerate our vehicle
+            if(too_close)
+            {
+              ref_vel -= .35; // .224 == roughly 5 m\s^2
+            }
+            // otherwise, if our car is under our desired velocity of 49.5, accelerate our vehicle
+            else if(ref_vel < 49.5)
+            {
+              ref_vel += .224;
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            /* END COMMENTED SECTION */
 
             // create a list of widely spaced (x,y) waypoints, evenly spaced at 30mm
             // later we will interpolate these waypoints with a spline and fill it in with more points
@@ -299,7 +373,7 @@ int main() {
               double prev_car_y = car_y - sin(car_yaw); // assume hypotenuse has length 1
 
               ptsx.push_back(prev_car_x);
-              ptsy.push_back(car_x);
+              ptsx.push_back(car_x);
 
               ptsy.push_back(prev_car_y);
               ptsy.push_back(car_y);
@@ -401,36 +475,6 @@ int main() {
             }
 
             json msgJson;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
             /* END TODO ----------------------------------------------------------------------------------------- */
