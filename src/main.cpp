@@ -259,7 +259,7 @@ int main() {
             {
               car_s = end_path_s;
             }
-            bool too_close = false;
+            bool too_close = false; // set flag
 
             // find ref_v to use (for each of the other cars on the highway...)
             for (int i=0; i < sensor_fusion.size(); i++)
@@ -276,14 +276,22 @@ int main() {
 
                 check_car_s += ((double)prev_size*.02*check_speed); // if using previous points can project s value out
                 // check s values greater than mine and s gap
-                if((check_car_s > car_s) && ((check_car_s - car_s) < 30)) // if our car within 30 meters of the car in front of us...
+                if((check_car_s > car_s) && ((check_car_s - car_s) < 30)) // if our car is within 30 meters of the car in front of us...
                 {
                   // lower our car's ref_vel
                   //ref_vel = 29.5; // mph
                   too_close = true;
-                  if(lane > 0)
+                  if(lane==2) // if we are in lane2 (right lane)...
                   {
-                    lane = 0;
+                    lane = 1; // ... change to lane1 (middle lane)
+                  }
+                  else if(lane==1) // if we are in lane1 (middle lane)...
+                  {
+                    lane = 0; // ... change to lane0 (left lane)
+                  }
+                  else if(lane==0) // if we are in lane0 (left lane)
+                  {
+                    lane = 1; // ... change to lane1 (middle lane)
                   }
                 }
               }
@@ -292,13 +300,14 @@ int main() {
             // if too close to other car in front of us, de-celerate our vehicle
             if(too_close)
             {
-              ref_vel -= .35; // .224 == roughly 5 m\s^2
+              ref_vel -= .3; // .224 == roughly 5 m\s^2
             }
             // otherwise, if our car is under our desired velocity of 49.5, accelerate our vehicle
             else if(ref_vel < 49.5)
             {
               ref_vel += .224;
             }
+
 
 
 
