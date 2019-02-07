@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 // for convenience
 using json = nlohmann::json;
 
@@ -226,7 +227,7 @@ int main() {
         if (event == "telemetry") {
           // j[1] is the data JSON object
 
-          // Main car's localization Data
+            // Main car's localization Data
             double car_x = j[1]["x"];
             double car_y = j[1]["y"];
             double car_s = j[1]["s"];
@@ -259,86 +260,74 @@ int main() {
             {
               car_s = end_path_s;
             }
-            bool too_close = false; // set flag
+
+            // reset flags
+            bool too_close = false; // true if our car is less than 30 meters behind the car in front of us
+            bool left_lane_clear = true; //  false if there is a car left  of ours +or- 30 meters from our car's s-value
+            bool right_lane_clear = true; // false if there is a car right of ours +or- 30 meters from our car's s-value
+
 
             // find ref_v to use (for each of the other cars on the highway...)
             for (int i=0; i < sensor_fusion.size(); i++)
             {
-              // get the other car's d value
-              float d = sensor_fusion[i][6];
-              // check if the car is in my lane
-              if(d < (2+4*lane+2) && d > (2+4*lane-2)) // +2 and -2 checks if car is anywhere inside the 4 meter wide lane
-              {
-                double vx = sensor_fusion[i][3];
-                double vy = sensor_fusion[i][4];
-                double check_speed = sqrt(vx*vx + vy*vy); // other car's velocity
-                double check_car_s = sensor_fusion[i][5]; // other car's s value
+              double vx = sensor_fusion[i][3]; // other car's velocity in x direction
+              double vy = sensor_fusion[i][4]; // other car's velocity in y direction
+              double check_speed = sqrt(vx*vx + vy*vy); // other car's velocity
+              double check_car_s = sensor_fusion[i][5]; // other car's s value
+              double check_car_d = sensor_fusion[i][6]; // other car's d value
 
-                check_car_s += ((double)prev_size*.02*check_speed); // if using previous points can project s value out
-                // check s values greater than mine and s gap
-                if((check_car_s > car_s) && ((check_car_s - car_s) < 30)) // if our car is within 30 meters of the car in front of us...
+              check_car_s += ((double)prev_size*.02*check_speed); // if using previous points can project s value out
+
+
+              if( fabs(car_s - check_car_s) < 50) // if the difference between my car's s-value and their car's s-value is less than 30 meters...
+              {
+                if( (check_car_d < (2+4*lane+2) && check_car_d > (2+4*lane-2)) && (check_car_s > car_s) ) // is the car is in my lane and in front of me?
                 {
-                  // lower our car's ref_vel
-                  //ref_vel = 29.5; // mph
-                  too_close = true;
-                  if(lane==2) // if we are in lane2 (right lane)...
+                    too_close = true;
+                }
+                else // ...else, the car must be in a different lane
+                {
+                  if( (check_car_d < (2+4* (lane - 1)+2)) && (check_car_d > (2+4* (lane - 1)-2))  ) // is the car in lane to the left of me?
                   {
-                    lane = 1; // ... change to lane1 (middle lane)
+                    left_lane_clear = false;
                   }
-                  else if(lane==1) // if we are in lane1 (middle lane)...
+                  if( (check_car_d < (2+4* (lane + 1)+2)) && (check_car_d > (2+4* (lane + 1)-2))  ) // is the car in lane to the right of me?
                   {
-                    lane = 0; // ... change to lane0 (left lane)
-                  }
-                  else if(lane==0) // if we are in lane0 (left lane)
-                  {
-                    lane = 1; // ... change to lane1 (middle lane)
+                    right_lane_clear = false;
                   }
                 }
               }
             }
 
-            // if too close to other car in front of us, de-celerate our vehicle
-            if(too_close)
+            // handle flags
+            /* NOTE:
+              lane == 0 means we are in the LEFT   lane
+              lane == 1 means we are in the MIDDLE lane
+              lane == 2 means we are in the RIGHT  lane
+            */
+
+            if(too_close) // if our car is too close to the car in front of us...
             {
-              ref_vel -= .3; // .224 == roughly 5 m\s^2
+              if( (left_lane_clear) && (lane != 0) ) // if the left lane is clear AND we are not already in the leftmost lane...
+              {
+                // change lanes into the left lane
+                lane -= 1;
+              }
+              else if( (right_lane_clear) && (lane != 2) ) // if the right lane is clear AND we are not already in the rightmost lane...
+              {
+                // change lanes into the right lane
+                lane += 1;
+              }
+              else // if we weren't able to change lanes, we need to slow down
+              {
+                // slow down
+                ref_vel -= .224; // .224 == roughly 5 m\s^2
+              }
             }
-            // otherwise, if our car is under our desired velocity of 49.5, accelerate our vehicle
-            else if(ref_vel < 49.5)
+            else if(ref_vel < 49.5) // if we are not too close and are going slower than we would like to be going, speed up
             {
               ref_vel += .224;
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
