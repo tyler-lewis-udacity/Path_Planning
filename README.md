@@ -1,6 +1,6 @@
-# CarND-Path-Planning-Project
-Self-Driving Car Engineer Nanodegree Program
-   
+# Udacity Path Planning Project
+Self-Driving Car Engineer Nanodegree Program - Term 3
+
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).
 
@@ -38,13 +38,13 @@ Here is the data provided from the Simulator to the C++ Program
 #### Previous path data given to the Planner
 
 //Note: Return the previous list but with processed points removed, can be a nice tool to show how far along
-the path has processed since last time. 
+the path has processed since last time.
 
 ["previous_path_x"] The previous list of x points previously given to the simulator
 
 ["previous_path_y"] The previous list of y points previously given to the simulator
 
-#### Previous path's end s and d values 
+#### Previous path's end s and d values
 
 ["end_path_s"] The previous list's last point's frenet s value
 
@@ -52,7 +52,7 @@ the path has processed since last time.
 
 #### Sensor Fusion Data, a list of all other car's attributes on the same side of the road. (No Noise)
 
-["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates. 
+["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates.
 
 ## Details
 
@@ -82,7 +82,7 @@ A really helpful resource for doing this project and creating smooth trajectorie
   * Run either `install-mac.sh` or `install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -105,36 +105,53 @@ Please (do your best to) stick to [Google's C++ style guide](https://google.gith
 Note: regardless of the changes you make, your project must be buildable using
 cmake and make!
 
+## Rubric Points Overview
 
-## Call for IDE Profiles Pull Requests
+Project Specifications can be found
+<a href="https://review.udacity.com/#!/rubrics/1020/view" target="_blank">here</a>
+.
 
-Help your fellow students!
+### The code compiles correctly
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
+The code compiles.  The executable produced that interfaces with the Udacity
+simulator is called `path_planning` and it can be found in the `build` directory
+inside the projects main directory.
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+### The car is able to drive at least 4.32 miles without incident
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
+The car was able to drive more than 4.32 miles without incident. The longest
+distance without incident that was achieved in testing was 5.82 miles.
 
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
+### The car drives according to the speed limit
 
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
+The car does not exceed 50 miles per hour.
 
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+### Max Acceleration and Jerk are not Exceeded
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+The maximum acceleration occurs when changing lanes and can peak at around 4.0 m/s^2.
+The maximum jerk observed was around 3.0 m/s^3.
+
+### Car does not have collisions
+
+No collisions have been observed using the currently set parameters.
+
+### The car stays in its lane, except for the time between changing lanes.
+
+The car may drift slightly outside the dotted white lines periodically but usually returns
+to inside the lines within about 1 second.
+
+### The car is able to change lanes
+
+The car changes lanes smoothly and efficiently.  The car will not change lanes unless the
+new lane is free of cars.  A buffer of 40 meters ahead and behind the new lane position
+must be clear before the car will change lanes.  This ensures that after the lane-change
+has been made, the car will have a safe distance gap between the next car to the front and
+the next car to the rear.
+
+### There is a reflection on how to generate paths
+
+#### Reflection
+
+
+
 

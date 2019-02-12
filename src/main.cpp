@@ -165,6 +165,8 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 }
 
+int desired_follow_distance = 40;
+
 int main() {
   uWS::Hub h;
 
@@ -249,13 +251,7 @@ int main() {
             /* TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds */
 
 
-            int prev_size = previous_path_x.size(); // added 24:22
-
-
-            /* BEGIN COMMENTED SECTION - 41:10 */
-
-
-            // step 1: avoid rear-ending vehicles in front of us
+            int prev_size = previous_path_x.size();
             if(prev_size > 0)
             {
               car_s = end_path_s;
@@ -279,7 +275,7 @@ int main() {
               check_car_s += ((double)prev_size*.02*check_speed); // if using previous points can project s value out
 
 
-              if( fabs(car_s - check_car_s) < 50) // if the difference between my car's s-value and their car's s-value is less than 30 meters...
+              if( fabs(car_s - check_car_s) < desired_follow_distance) // if the difference between my car's s-value and their car's s-value is less than 30 meters...
               {
                 if( (check_car_d < (2+4*lane+2) && check_car_d > (2+4*lane-2)) && (check_car_s > car_s) ) // is the car is in my lane and in front of me?
                 {
@@ -321,36 +317,13 @@ int main() {
               else // if we weren't able to change lanes, we need to slow down
               {
                 // slow down
-                ref_vel -= .224; // .224 == roughly 5 m\s^2
+                ref_vel -= .25; // .224 == roughly 5 m\s^2
               }
             }
             else if(ref_vel < 49.5) // if we are not too close and are going slower than we would like to be going, speed up
             {
-              ref_vel += .224;
+              ref_vel += .225;
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /* END COMMENTED SECTION */
 
             // create a list of widely spaced (x,y) waypoints, evenly spaced at 30mm
             // later we will interpolate these waypoints with a spline and fill it in with more points
@@ -396,7 +369,6 @@ int main() {
             }
             // ... so far, we have 2 points in ptsx and ptsy.
 
-            // added 27:34
 
             // in Frenet add evenly 30mm spaced points ahead of the starting reference
             vector<double> next_wp0 = getXY(car_s + 30, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
@@ -421,8 +393,6 @@ int main() {
               ptsx[i] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
               ptsy[i] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
             }
-
-            // added 29:31
 
             // create a spline
             tk::spline s;
@@ -475,7 +445,9 @@ int main() {
             json msgJson;
 
 
-            /* END TODO ----------------------------------------------------------------------------------------- */
+            /* END TODO */
+
+
             msgJson["next_x"] = next_x_vals;
             msgJson["next_y"] = next_y_vals;
 
