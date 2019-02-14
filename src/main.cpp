@@ -205,10 +205,11 @@ int main() {
   }
 
   // start in lane 1
-  int lane = 1; // added 23:51
+  int lane = 1; // lane==0: left lane, lane==1: middle lane, lane==2: right lane
+
 
   // have a reference velocity to target
-  double ref_vel = 0.0; // mph added 24:05 (modified at 52:20)
+  double ref_vel = 0.0; // mph
 
   h.onMessage([&ref_vel,&lane,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) { // added '&ref_vel' and '&lane' to parameters list above
@@ -259,7 +260,7 @@ int main() {
 
             // reset flags
             bool too_close = false; // true if our car is less than 30 meters behind the car in front of us
-            bool left_lane_clear = true; //  false if there is a car left  of ours +or- 30 meters from our car's s-value
+            bool left_lane_clear  = true; //  false if there is a car left  of ours +or- 30 meters from our car's s-value
             bool right_lane_clear = true; // false if there is a car right of ours +or- 30 meters from our car's s-value
 
 
@@ -322,12 +323,12 @@ int main() {
             }
             else if(ref_vel < 49.5) // if we are not too close and are going slower than we would like to be going, speed up
             {
-              ref_vel += .225;
+              ref_vel += .25;
             }
 
             // create a list of widely spaced (x,y) waypoints, evenly spaced at 30mm
             // later we will interpolate these waypoints with a spline and fill it in with more points
-            vector<double> ptsx; // added 25:19
+            vector<double> ptsx;
             vector<double> ptsy;
 
             // reference x, y, and yaw states
@@ -427,7 +428,6 @@ int main() {
 
               x_add_on = x_point;
 
-              // added 37:02
               double x_ref = x_point;
               double y_ref = y_point;
 

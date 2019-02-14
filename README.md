@@ -142,16 +142,46 @@ to inside the lines within about 1 second.
 
 ### The car is able to change lanes
 
-The car changes lanes smoothly and efficiently.  The car will not change lanes unless the
-new lane is free of cars.  A buffer of 40 meters ahead and behind the new lane position
+The car is able to change lanes when necessary.
+
+### There is a reflection on how to generate paths
+
+
+
+#### Reflection
+
+##### Project Overview
+
+The goal of this project is to plan a drivable path for a vehicle to follow in the Udacity simulator.
+There are three main components to self-driving car software: Perception, Planning, and Control.
+For this project, perfect 'Perception' is assumed. The vehicle's position in relation to the road
+as well as the position of all other vehicles on the road is provided.  Also, perfect 'Control' is
+assumed which means that the path planning gets implemented perfectly by the simulator with no
+random error added.
+
+##### Spline Fitting
+
+The path planner outputs a path made up of 50 (x,y) points (Lines 328-457 in `main.cpp`). The car arrives at the next point
+in the path every .02 seconds.  Spline interpolation functionality was provided by `spline.h`
+(https://kluge.in-chemnitz.de/opensource/spline/).  Lane changing is accomplished by fitting
+a spline to three points (Frenet coordinates) spaced 30 meters apart.  This yields a smooth
+spline that handles lane changes easily.  The additional points needed to send to the
+simulator are "back-calculated" from the generated spline.
+
+##### Lane Changes
+
+Lane changes are fairly smooth and safe.  The car will not change lanes unless the
+new lane is free of cars (Lines 261-327 in `main.cpp`).  A buffer of 40 meters ahead and behind the new lane position
 must be clear before the car will change lanes.  This ensures that after the lane-change
 has been made, the car will have a safe distance gap between the next car to the front and
 the next car to the rear.
 
-### There is a reflection on how to generate paths
+##### Room for Improvement
 
-#### Reflection
+The path planner currently uses a primitive method for adjusting the car's accelleration
+(Lines 318-327 in `main.cpp`).  A better approach might be to implement a P.I.D. controller.
 
-
-
-
+Also, the method for checking another lane for cars before changing lanes could
+be improved.  Currently, the planner only takes into account other cars' positions in adjacent
+lanes.  A better method would somehow take into account the other car's position, velocity, and
+acceleration in order to determine more accurately if the lane is safe to change into.
